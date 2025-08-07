@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:spp_mobile/screens/payment_from_screen.dart';
-
+import 'package:spp_mobile/screens/tunggakan_screen.dart';
+import 'package:spp_mobile/screens/history_screen.dart';
+import 'package:spp_mobile/screens/notifications_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -28,12 +30,24 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Icon(Icons.notifications_none),
+
+                // Navigasi Notification
+                IconButton(
+                  icon: const Icon(Icons.notifications_none),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationScreen(),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 30),
 
-            /// Menu Button 1
+            /// Menu Button 1 - Form Pembayaran Bulanan
             _buildMenuButton(
               title: 'Form Pembayaran Bulanan',
               onTap: () {
@@ -46,19 +60,29 @@ class HomeScreen extends StatelessWidget {
               },
             ),
 
-            /// Menu Button 2
+            /// Menu Button 2 - Tunggakan
             _buildMenuButton(
               title: 'Tunggakan',
               onTap: () {
-                // Navigate to Tunggakan
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TunggakanScreen(),
+                  ),
+                );
               },
             ),
 
-            /// Menu Button 3
+            /// Menu Button 3 - Laporan Pembayaran
             _buildMenuButton(
               title: 'Laporan Pembayaran',
               onTap: () {
-                // Navigate to Laporan
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HistoryScreen(),
+                  ),
+                );
               },
             ),
           ],

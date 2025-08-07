@@ -17,3 +17,15 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/gopay.png
+    - assets/ovo.png
+    - assets/dana.png
+    - assets/bca.png
+    - assets/mandiri.png
+    - assets/bri.png
+    - assets/bni.png
+    - assets/citibank.png
+    - assets/linkaja.png
+    
+    

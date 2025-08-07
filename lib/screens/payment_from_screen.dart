@@ -1,19 +1,28 @@
 import 'package:flutter/material.dart';
+import 'select_payment_method_screen.dart';
+import 'payment_success_screen.dart';
 
 class PaymentFormScreen extends StatefulWidget {
-  const PaymentFormScreen({super.key});
+  final String? initialMonth;
+  const PaymentFormScreen({super.key, this.initialMonth});
 
   @override
   State<PaymentFormScreen> createState() => _PaymentFormScreenState();
 }
 
 class _PaymentFormScreenState extends State<PaymentFormScreen> {
-  // Daftar metode pembayaran
-  final List<String> paymentMethods = ['BCA', 'BRI', 'Mandiri', 'BNI'];
-  String selectedMethod = 'BCA'; 
-
+  String selectedCategory = 'E-Wallet';
+  String? selectedMethod;
   final TextEditingController monthController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialMonth != null) {
+      monthController.text = widget.initialMonth!;
+    }
+  }
 
   @override
   void dispose() {
@@ -39,6 +48,45 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
     }
   }
 
+  void _navigateToSelectMethod() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SelectPaymentMethodScreen(category: selectedCategory),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        selectedMethod = result;
+      });
+    }
+  }
+
+  void _handleSubmit() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PaymentSuccessScreen(),
+      ),
+    );
+  }
+
+  String _getMonthName() {
+    if (monthController.text.isEmpty) return '-';
+    try {
+      final parts = monthController.text.split('-');
+      final monthNumber = int.parse(parts[0]);
+      const monthNames = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+      return monthNames[monthNumber - 1];
+    } catch (e) {
+      return '-';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,9 +94,7 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
         title: const Text('Payment Method'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
@@ -56,7 +102,7 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Alert Box
+            // Alert Box
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -64,13 +110,13 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
-                children: const [
-                  Icon(Icons.warning_amber, color: Colors.orange),
-                  SizedBox(width: 10),
+                children: [
+                  const Icon(Icons.warning_amber, color: Colors.orange),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Pembayaran SPP bulan Januari telah jatuh tempo',
-                      style: TextStyle(fontSize: 13),
+                      'Pembayaran SPP bulan ${_getMonthName()} telah jatuh tempo',
+                      style: const TextStyle(fontSize: 13),
                     ),
                   ),
                 ],
@@ -78,37 +124,45 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
             ),
             const SizedBox(height: 20),
 
-            /// Title
             const Text(
               'Formulir Pembayaran',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
 
-            /// Dropdown Metode Pembayaran
+            // Dropdown Kategori Pembayaran
             const Text('Metode Pembayaran'),
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
-              value: selectedMethod,
-              items: paymentMethods.map((method) {
-                return DropdownMenuItem(
-                  value: method,
-                  child: Text(method),
-                );
-              }).toList(),
+              value: selectedCategory,
+              items: const [
+                DropdownMenuItem(value: 'E-Wallet', child: Text('E-Wallet')),
+                DropdownMenuItem(value: 'Transfer Bank', child: Text('Transfer Bank')),
+              ],
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(horizontal: 10),
               ),
               onChanged: (value) {
                 setState(() {
-                  selectedMethod = value!;
+                  selectedCategory = value!;
+                  selectedMethod = null;
                 });
+                _navigateToSelectMethod();
               },
             ),
+
+            if (selectedMethod != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                'Metode yang dipilih: $selectedMethod',
+                style: const TextStyle(fontStyle: FontStyle.italic),
+              ),
+            ],
+
             const SizedBox(height: 20),
 
-            /// Bulan Pembayaran
+            // Bulan Pembayaran
             const Text('Pembayaran Bulan'),
             const SizedBox(height: 6),
             TextField(
@@ -123,7 +177,7 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
             ),
             const SizedBox(height: 20),
 
-            /// Nominal
+            // Nominal
             const Text('Nominal'),
             const SizedBox(height: 6),
             TextField(
@@ -136,14 +190,11 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
             ),
             const SizedBox(height: 30),
 
-            /// Bayar Sekarang
+            // Tombol Bayar Sekarang
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Implementasi aksi bayar
-                  debugPrint('Bayar ${amountController.text} via $selectedMethod');
-                },
+                onPressed: _handleSubmit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -154,27 +205,6 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
                 child: const Text(
                   'Bayar Sekarang',
                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            /// Tombol Kembali
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  'Kembali',
-                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
